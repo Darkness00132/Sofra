@@ -1,7 +1,7 @@
 <Solution>
   <Folder Name="/docs/">
-    <File Path="PRD.md" />
-    <File Path="SRS.md" />
+    <File Path="docs/PRD.md" />
+    <File Path="docs/SRS.md" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Sofra.Application/Sofra.Application.csproj" />
