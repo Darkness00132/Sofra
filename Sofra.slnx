@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/docs/">
+    <File Path="PRD.md" />
+    <File Path="SRS.md" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Sofra.Application/Sofra.Application.csproj" />
+    <Project Path="src/Sofra.Domain/Sofra.Domain.csproj" Id="e32c1eaa-730c-4c8e-b689-1570fcdf5875" />
+    <Project Path="src/Sofra.Infrastructure/Sofra.Infrastructure.csproj" Id="180e5b3d-e0c0-42ab-a54a-aaa3abd48e03" />
+    <Project Path="src/Sofra.Presentation/Sofra.Presentation.csproj" />
+  </Folder>
+</Solution>
