@@ -7,7 +7,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication()
     .AddInfrastructure(builder.Configuration)
-    .AddApi(builder.Configuration);
+    .AddApi(builder.Configuration)
+    .AddJwtAuthentication(builder.Configuration);
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
