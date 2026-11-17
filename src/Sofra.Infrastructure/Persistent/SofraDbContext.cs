@@ -19,6 +19,8 @@ public class SofraDbContext(DbContextOptions<SofraDbContext> options)
     public DbSet<RestaurantApplication> RestaurantApplications => Set<RestaurantApplication>();
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<Transaction> Transactions => Set<Transaction>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<PasswordResetOtp> PasswordResetOtps => Set<PasswordResetOtp>();
 
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
