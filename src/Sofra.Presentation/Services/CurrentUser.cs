@@ -15,7 +15,7 @@ public class CurrentUser(IHttpContextAccessor httpContextAccessor) : ICurrentUse
         var value = httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (!Guid.TryParse(value, out var userId))
-            return Result.Failure<Guid>(Error.Unauthorized(
+            return Result<Guid>.Failure(Error.Unauthorized(
                 "AUTHENTICATION_REQUIRED",
                 "You must be signed in to perform this operation."));
 
