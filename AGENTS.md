@@ -36,6 +36,7 @@ Arrows point inward only. Never add EF/HTTP/`DbContext` to Domain or Application
    - `creating-domain-entities.md` — entity recipe, weak entities, BR enforcement map
    - `adding-cqrs-features.md` — MediatR 15 layout, Result/Error conventions, `ICurrentUser` usage
    - `api-endpoints.md` — error envelope, `ToActionResult`, exception handler, controller rules
+   - `frontend-architecture.md` — `src/frontend/` layer rules: axios client + interceptors, zod data contracts, TanStack Query/zustand split, feature view models, pages/routes
    - `working-with-the-database.md` — configurations, migration workflow, stale-migration warning
    - `writing-domain-tests.md` — classical behavior tests, FluentAssertions, plain-English names, DRY helpers
    - `naming-conventions.md` — names must say what the thing does, in domain vocabulary; no vague category words; offer options
@@ -46,4 +47,5 @@ Arrows point inward only. Never add EF/HTTP/`DbContext` to Domain or Application
 - Build: `dotnet build` — must pass before claiming anything "works".
 - Tests: `dotnet test` — behavior suite in `test/Sofra.DomainTests`; must stay green.
 - Run: `dotnet run --project src/Sofra.Presentation` → `https://localhost:7265`; docs (Development) at `/scalar/v1`, `/openapi/v1.json`.
+- Frontend: `npm run dev` in `src/frontend/` → `http://localhost:5173`; verify with `npm run typecheck` (runs `tsc -b`), `npm run lint`, `npm run build`. Conventions: `frontend-architecture.md`.
 - DB: `Server=localhost;Database=Sofra;Trusted_Connection=true;`. Migrations currently stale — see `working-with-the-database.md` for the re-init sequence before running the app.
