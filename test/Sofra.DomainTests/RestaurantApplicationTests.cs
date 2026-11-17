@@ -15,7 +15,7 @@ public class RestaurantApplicationTests
     {
         var application = PendingApplication();
 
-        Assert.Equal(RestaurantStatus.PendingApproval, application.Status);
+        application.Status.Should().Be(RestaurantStatus.PendingApproval);
     }
 
     [Fact]
@@ -26,9 +26,9 @@ public class RestaurantApplicationTests
 
         application.Approve(reviewerId);
 
-        Assert.Equal(RestaurantStatus.Approved, application.Status);
-        Assert.Equal(reviewerId, application.ReviewedByUserId);
-        Assert.NotNull(application.ReviewedAt);
+        application.Status.Should().Be(RestaurantStatus.Approved);
+        application.ReviewedByUserId.Should().Be(reviewerId);
+        application.ReviewedAt.Should().NotBeNull();
     }
 
     [Fact]
@@ -37,7 +37,8 @@ public class RestaurantApplicationTests
         var application = PendingApplication();
         application.Approve(Guid.NewGuid());
 
-        Assert.Throws<DomainException>(() => application.Approve(Guid.NewGuid()));
+        FluentActions.Invoking(() => application.Approve(Guid.NewGuid()))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -46,7 +47,8 @@ public class RestaurantApplicationTests
         var application = PendingApplication();
         application.Approve(Guid.NewGuid());
 
-        Assert.Throws<DomainException>(() => application.Reject("Too many kitchens", Guid.NewGuid()));
+        FluentActions.Invoking(() => application.Reject("Too many kitchens", Guid.NewGuid()))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -55,7 +57,8 @@ public class RestaurantApplicationTests
         var application = PendingApplication();
         application.Reject("Incomplete documents", Guid.NewGuid());
 
-        Assert.Throws<DomainException>(() => application.Approve(Guid.NewGuid()));
+        FluentActions.Invoking(() => application.Approve(Guid.NewGuid()))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -63,7 +66,8 @@ public class RestaurantApplicationTests
     {
         var application = PendingApplication();
 
-        Assert.Throws<DomainException>(() => application.Reject("   ", Guid.NewGuid()));
+        FluentActions.Invoking(() => application.Reject("   ", Guid.NewGuid()))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -71,6 +75,7 @@ public class RestaurantApplicationTests
     {
         var application = PendingApplication();
 
-        Assert.Throws<DomainException>(() => application.LinkRestaurant(Guid.NewGuid()));
+        FluentActions.Invoking(() => application.LinkRestaurant(Guid.NewGuid()))
+            .Should().Throw<DomainException>();
     }
 }

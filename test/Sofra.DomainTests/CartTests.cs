@@ -17,8 +17,8 @@ public class CartTests
 
         cart.AddItem(item, quantity: 2);
 
-        Assert.False(cart.IsEmpty);
-        Assert.Equal(item.Id, cart.CartItems.Single().FoodItemId);
+        cart.IsEmpty.Should().BeFalse();
+        cart.CartItems.Should().ContainSingle().Which.FoodItemId.Should().Be(item.Id);
     }
 
     [Fact]
@@ -30,7 +30,8 @@ public class CartTests
 
         var otherRestaurantItem = ItemFor(Guid.NewGuid());
 
-        Assert.Throws<DomainException>(() => cart.AddItem(otherRestaurantItem, quantity: 1));
+        FluentActions.Invoking(() => cart.AddItem(otherRestaurantItem, quantity: 1))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -43,8 +44,7 @@ public class CartTests
         cart.AddItem(item, quantity: 2);
         cart.AddItem(item, quantity: 3);
 
-        var cartItem = Assert.Single(cart.CartItems);
-        Assert.Equal(5, cartItem.Quantity);
+        cart.CartItems.Should().ContainSingle().Which.Quantity.Should().Be(5);
     }
 
     [Fact]
@@ -55,7 +55,8 @@ public class CartTests
         var item = ItemFor(restaurant);
         item.MakeUnavailable();
 
-        Assert.Throws<DomainException>(() => cart.AddItem(item, quantity: 1));
+        FluentActions.Invoking(() => cart.AddItem(item, quantity: 1))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -64,7 +65,8 @@ public class CartTests
         var restaurant = Guid.NewGuid();
         var cart = Cart.CreateForRestaurant(CustomerId, restaurant);
 
-        Assert.Throws<DomainException>(() => cart.AddItem(ItemFor(restaurant), quantity: 0));
+        FluentActions.Invoking(() => cart.AddItem(ItemFor(restaurant), quantity: 0))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -77,8 +79,8 @@ public class CartTests
 
         cart.RemoveItem(item.Id);
 
-        Assert.True(cart.IsEmpty);
-        Assert.Null(cart.RestaurantId);
+        cart.IsEmpty.Should().BeTrue();
+        cart.RestaurantId.Should().BeNull();
     }
 
     [Fact]
@@ -87,7 +89,8 @@ public class CartTests
         var restaurant = Guid.NewGuid();
         var cart = Cart.CreateForRestaurant(CustomerId, restaurant);
 
-        Assert.Throws<DomainException>(() => cart.RemoveItem(Guid.NewGuid()));
+        FluentActions.Invoking(() => cart.RemoveItem(Guid.NewGuid()))
+            .Should().Throw<DomainException>();
     }
 
     private static FoodItem ItemFor(Guid restaurantId, string name = "Burger", decimal price = 50m) =>

@@ -10,7 +10,8 @@ public class TransactionTests
     [Fact]
     public void A_transaction_amount_must_be_greater_than_zero()
     {
-        Assert.Throws<DomainException>(() => Transaction.Create(TransactionType.Debit, amount: 0m));
+        FluentActions.Invoking(() => Transaction.Create(TransactionType.Debit, amount: 0m))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -18,7 +19,7 @@ public class TransactionTests
     {
         var transaction = Transaction.Create(TransactionType.Credit, 100m);
 
-        Assert.Equal(TransactionStatus.Completed, transaction.Status);
+        transaction.Status.Should().Be(TransactionStatus.Completed);
     }
 
     [Fact]
@@ -27,7 +28,8 @@ public class TransactionTests
         var transaction = Transaction.Create(TransactionType.Debit, 100m);
         transaction.Reverse();
 
-        Assert.Throws<DomainException>(() => transaction.MarkFailed());
+        FluentActions.Invoking(() => transaction.MarkFailed())
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -36,7 +38,8 @@ public class TransactionTests
         var transaction = Transaction.Create(TransactionType.Debit, 100m);
         transaction.MarkFailed();
 
-        Assert.Throws<DomainException>(() => transaction.MarkFailed());
+        FluentActions.Invoking(() => transaction.MarkFailed())
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -45,6 +48,7 @@ public class TransactionTests
         var transaction = Transaction.Create(TransactionType.Debit, 100m);
         transaction.MarkFailed();
 
-        Assert.Throws<DomainException>(() => transaction.Reverse());
+        FluentActions.Invoking(() => transaction.Reverse())
+            .Should().Throw<DomainException>();
     }
 }

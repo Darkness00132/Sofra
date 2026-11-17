@@ -9,8 +9,9 @@ public class FoodItemTests
     [Fact]
     public void A_food_item_price_cannot_be_negative()
     {
-        Assert.Throws<DomainException>(() =>
-            FoodItem.Create(Guid.NewGuid(), "Burger", "Beef burger", price: -1m));
+        FluentActions.Invoking(() =>
+                FoodItem.Create(Guid.NewGuid(), "Burger", "Beef burger", price: -1m))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -18,7 +19,8 @@ public class FoodItemTests
     {
         var item = FoodItem.Create(Guid.NewGuid(), "Burger", "Beef burger", 50m);
 
-        Assert.Throws<DomainException>(() => item.UpdateInfo("Burger", "Beef burger", -5m));
+        FluentActions.Invoking(() => item.UpdateInfo("Burger", "Beef burger", -5m))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -26,7 +28,7 @@ public class FoodItemTests
     {
         var item = FoodItem.Create(Guid.NewGuid(), "Burger", "Beef burger", 50m);
 
-        Assert.True(item.IsAvailable);
+        item.IsAvailable.Should().BeTrue();
     }
 
     [Fact]
@@ -35,11 +37,9 @@ public class FoodItemTests
         var item = FoodItem.Create(Guid.NewGuid(), "Burger", "Beef burger", 50m);
 
         item.MakeUnavailable();
-
-        Assert.False(item.IsAvailable);
+        item.IsAvailable.Should().BeFalse();
 
         item.MakeAvailable();
-
-        Assert.True(item.IsAvailable);
+        item.IsAvailable.Should().BeTrue();
     }
 }

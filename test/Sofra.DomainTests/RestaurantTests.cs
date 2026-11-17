@@ -13,7 +13,8 @@ public class RestaurantTests
         var application = RestaurantApplication.Create(
             Guid.NewGuid(), "Sofra Kitchen", "12 Nile St, Cairo", "01000000000", "Family kitchen");
 
-        Assert.Throws<DomainException>(() => Restaurant.FromApprovedApplication(application));
+        FluentActions.Invoking(() => Restaurant.FromApprovedApplication(application))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -21,9 +22,9 @@ public class RestaurantTests
     {
         var restaurant = ApprovedRestaurant();
 
-        Assert.Equal(RestaurantStatus.Approved, restaurant.Status);
-        Assert.True(restaurant.IsAcceptingOrders);
-        Assert.True(restaurant.CanAcceptNewOrders);
+        restaurant.Status.Should().Be(RestaurantStatus.Approved);
+        restaurant.IsAcceptingOrders.Should().BeTrue();
+        restaurant.CanAcceptNewOrders.Should().BeTrue();
     }
 
     [Fact]
@@ -33,9 +34,9 @@ public class RestaurantTests
 
         restaurant.Suspend();
 
-        Assert.Equal(RestaurantStatus.Suspended, restaurant.Status);
-        Assert.False(restaurant.IsAcceptingOrders);
-        Assert.False(restaurant.CanAcceptNewOrders);
+        restaurant.Status.Should().Be(RestaurantStatus.Suspended);
+        restaurant.IsAcceptingOrders.Should().BeFalse();
+        restaurant.CanAcceptNewOrders.Should().BeFalse();
     }
 
     [Fact]
@@ -44,7 +45,8 @@ public class RestaurantTests
         var restaurant = ApprovedRestaurant();
         restaurant.Suspend();
 
-        Assert.Throws<DomainException>(() => restaurant.Suspend());
+        FluentActions.Invoking(() => restaurant.Suspend())
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -55,9 +57,9 @@ public class RestaurantTests
 
         restaurant.Reinstate();
 
-        Assert.Equal(RestaurantStatus.Approved, restaurant.Status);
-        Assert.True(restaurant.IsAcceptingOrders);
-        Assert.True(restaurant.CanAcceptNewOrders);
+        restaurant.Status.Should().Be(RestaurantStatus.Approved);
+        restaurant.IsAcceptingOrders.Should().BeTrue();
+        restaurant.CanAcceptNewOrders.Should().BeTrue();
     }
 
     [Fact]
@@ -65,7 +67,8 @@ public class RestaurantTests
     {
         var restaurant = ApprovedRestaurant();
 
-        Assert.Throws<DomainException>(() => restaurant.Reinstate());
+        FluentActions.Invoking(() => restaurant.Reinstate())
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -73,8 +76,9 @@ public class RestaurantTests
     {
         var restaurant = ApprovedRestaurant();
 
-        Assert.Throws<DomainException>(() =>
-            restaurant.UpdateInfo("   ", "12 Nile St, Cairo", "01000000000", "Family kitchen"));
+        FluentActions.Invoking(() =>
+                restaurant.UpdateInfo("   ", "12 Nile St, Cairo", "01000000000", "Family kitchen"))
+            .Should().Throw<DomainException>();
     }
 
     private static Restaurant ApprovedRestaurant()
