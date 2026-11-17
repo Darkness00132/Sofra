@@ -7,9 +7,6 @@ namespace Sofra.DomainTests;
 /// <summary>Application review rules — an application is decided exactly once (SRS FR-47/FR-48).</summary>
 public class RestaurantApplicationTests
 {
-    private static RestaurantApplication PendingApplication() => RestaurantApplication.Create(
-        Guid.NewGuid(), "Sofra Kitchen", "12 Nile St, Cairo", "01000000000", "Family kitchen");
-
     [Fact]
     public void A_new_application_is_pending_approval()
     {
@@ -34,8 +31,7 @@ public class RestaurantApplicationTests
     [Fact]
     public void Cannot_approve_an_application_that_was_already_approved()
     {
-        var application = PendingApplication();
-        application.Approve(Guid.NewGuid());
+        var application = ApprovedApplication();
 
         FluentActions.Invoking(() => application.Approve(Guid.NewGuid()))
             .Should().Throw<DomainException>();
@@ -44,8 +40,7 @@ public class RestaurantApplicationTests
     [Fact]
     public void Cannot_reject_an_application_that_was_already_approved()
     {
-        var application = PendingApplication();
-        application.Approve(Guid.NewGuid());
+        var application = ApprovedApplication();
 
         FluentActions.Invoking(() => application.Reject("Too many kitchens", Guid.NewGuid()))
             .Should().Throw<DomainException>();
@@ -54,8 +49,7 @@ public class RestaurantApplicationTests
     [Fact]
     public void Cannot_approve_an_application_that_was_already_rejected()
     {
-        var application = PendingApplication();
-        application.Reject("Incomplete documents", Guid.NewGuid());
+        var application = RejectedApplication();
 
         FluentActions.Invoking(() => application.Approve(Guid.NewGuid()))
             .Should().Throw<DomainException>();
@@ -77,5 +71,24 @@ public class RestaurantApplicationTests
 
         FluentActions.Invoking(() => application.LinkRestaurant(Guid.NewGuid()))
             .Should().Throw<DomainException>();
+    }
+
+    private static RestaurantApplication PendingApplication() => RestaurantApplication.Create(
+        Guid.NewGuid(), "Sofra Kitchen", "12 Nile St, Cairo", "01000000000", "Family kitchen");
+
+    private static RestaurantApplication ApprovedApplication()
+    {
+        var application = PendingApplication();
+        application.Approve(Guid.NewGuid());
+
+        return application;
+    }
+
+    private static RestaurantApplication RejectedApplication()
+    {
+        var application = PendingApplication();
+        application.Reject("Incomplete documents", Guid.NewGuid());
+
+        return application;
     }
 }

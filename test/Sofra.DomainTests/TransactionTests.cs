@@ -10,14 +10,14 @@ public class TransactionTests
     [Fact]
     public void A_transaction_amount_must_be_greater_than_zero()
     {
-        FluentActions.Invoking(() => Transaction.Create(TransactionType.Debit, amount: 0m))
+        FluentActions.Invoking(() => LedgerEntry(amount: 0m))
             .Should().Throw<DomainException>();
     }
 
     [Fact]
     public void A_new_transaction_is_completed_by_default()
     {
-        var transaction = Transaction.Create(TransactionType.Credit, 100m);
+        var transaction = LedgerEntry(type: TransactionType.Credit);
 
         transaction.Status.Should().Be(TransactionStatus.Completed);
     }
@@ -25,7 +25,7 @@ public class TransactionTests
     [Fact]
     public void A_reversed_transaction_cannot_be_marked_failed()
     {
-        var transaction = Transaction.Create(TransactionType.Debit, 100m);
+        var transaction = LedgerEntry();
         transaction.Reverse();
 
         FluentActions.Invoking(() => transaction.MarkFailed())
@@ -35,7 +35,7 @@ public class TransactionTests
     [Fact]
     public void A_failed_transaction_cannot_be_marked_failed_again()
     {
-        var transaction = Transaction.Create(TransactionType.Debit, 100m);
+        var transaction = LedgerEntry();
         transaction.MarkFailed();
 
         FluentActions.Invoking(() => transaction.MarkFailed())
@@ -45,10 +45,13 @@ public class TransactionTests
     [Fact]
     public void Only_a_completed_transaction_can_be_reversed()
     {
-        var transaction = Transaction.Create(TransactionType.Debit, 100m);
+        var transaction = LedgerEntry();
         transaction.MarkFailed();
 
         FluentActions.Invoking(() => transaction.Reverse())
             .Should().Throw<DomainException>();
     }
+
+    private static Transaction LedgerEntry(decimal amount = 100m, TransactionType type = TransactionType.Debit) =>
+        Transaction.Create(type, amount);
 }
