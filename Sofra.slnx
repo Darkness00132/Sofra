@@ -9,6 +9,6 @@
     <Project Path="src/Sofra.Presentation/Sofra.Api.csproj" />
   </Folder>
   <Folder Name="/test/">
-    <Project Path="test/Sofra.DomainTests/Sofra.DomainTests.csproj" />
+    <Project Path="test/Sofra.DomainTests/Sofra.DomainTests.csproj" Id="32790099-22c1-41ec-b500-b0b54b395c84" />
   </Folder>
 </Solution>
