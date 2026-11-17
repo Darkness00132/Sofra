@@ -1,3 +1,4 @@
+using Serilog;
 using Sofra.Application;
 using Sofra.Infrastructure;
 using Sofra.Api;
@@ -5,14 +6,21 @@ using Sofra.Api.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Host.UseSerilog((context, loggerConfiguration) => loggerConfiguration
+    .ReadFrom.Configuration(context.Configuration)
+    .Enrich.FromLogContext());
+
 builder.Services.AddApplication()
     .AddInfrastructure(builder.Configuration)
     .AddApi(builder.Configuration)
     .AddJwtAuthentication(builder.Configuration);
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 var app = builder.Build();
+
+app.UseSerilogRequestLogging();
 
 app.UseExceptionHandler();
 app.UseHttpsRedirection();
