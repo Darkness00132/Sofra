@@ -25,8 +25,7 @@ public class OrderTests
     [Fact]
     public void A_delivery_order_requires_a_delivery_address()
     {
-        FluentActions.Invoking(() => Order.Create(
-                CustomerId, RestaurantId, FulfilmentType.Delivery, PaymentMethod.CashOnDelivery, deliveryAddress: null))
+        FluentActions.Invoking(() => DeliveryOrder(deliveryAddress: null))
             .Should().Throw<DomainException>();
     }
 
@@ -52,7 +51,7 @@ public class OrderTests
         var order = PickupOrder();
         order.Accept(StaffId);
 
-        FluentActions.Invoking(() => order.AddItem(Guid.NewGuid(), quantity: 1, unitPrice: 50m))
+        FluentActions.Invoking(() => AddBurger(order))
             .Should().Throw<DomainException>();
     }
 
@@ -61,7 +60,7 @@ public class OrderTests
     {
         var order = PickupOrder();
 
-        FluentActions.Invoking(() => order.AddItem(Guid.NewGuid(), quantity: 0, unitPrice: 50m))
+        FluentActions.Invoking(() => AddBurger(order, quantity: 0))
             .Should().Throw<DomainException>();
     }
 
@@ -70,7 +69,7 @@ public class OrderTests
     {
         var order = PickupOrder();
 
-        FluentActions.Invoking(() => order.AddItem(Guid.NewGuid(), quantity: 1, unitPrice: -1m))
+        FluentActions.Invoking(() => AddBurger(order, unitPrice: -1m))
             .Should().Throw<DomainException>();
     }
 
@@ -78,7 +77,7 @@ public class OrderTests
     public void An_order_item_can_be_removed_while_the_order_is_pending()
     {
         var order = PickupOrder();
-        var item = order.AddItem(Guid.NewGuid(), quantity: 1, unitPrice: 50m);
+        var item = AddBurger(order);
 
         order.RemoveItem(item.Id);
 
@@ -98,7 +97,7 @@ public class OrderTests
     public void Totals_cannot_contain_negative_values()
     {
         var order = PickupOrder();
-        order.AddItem(Guid.NewGuid(), quantity: 1, unitPrice: 50m);
+        AddBurger(order);
 
         FluentActions.Invoking(() => order.SetTotals(tax: -1m, deliveryFee: 0m, discount: 0m))
             .Should().Throw<DomainException>();
@@ -108,7 +107,7 @@ public class OrderTests
     public void The_discount_cannot_exceed_the_order_amount()
     {
         var order = PickupOrder();
-        order.AddItem(Guid.NewGuid(), quantity: 2, unitPrice: 50m);   // subtotal 100
+        AddBurger(order, quantity: 2);   // subtotal 100
 
         FluentActions.Invoking(() => order.SetTotals(tax: 0m, deliveryFee: 0m, discount: 150m))
             .Should().Throw<DomainException>();
@@ -118,7 +117,7 @@ public class OrderTests
     public void The_order_total_is_subtotal_plus_tax_and_delivery_fee_minus_discount()
     {
         var order = PickupOrder();
-        order.AddItem(Guid.NewGuid(), quantity: 2, unitPrice: 50m);   // subtotal 100
+        AddBurger(order, quantity: 2);   // subtotal 100
 
         order.SetTotals(tax: 5m, deliveryFee: 10m, discount: 10m);
 
@@ -189,11 +188,7 @@ public class OrderTests
     [Fact]
     public void A_completed_order_cannot_be_cancelled()
     {
-        var order = PickupOrder();
-        order.Accept(StaffId);
-        order.StartPreparing(StaffId);
-        order.MarkReady(StaffId);
-        order.Complete(StaffId);
+        var order = CompletedOrder();
 
         FluentActions.Invoking(() =>
                 order.Cancel(OrderCancellationReason.CustomerRequested, note: null, changedBy: CustomerId))
@@ -203,10 +198,7 @@ public class OrderTests
     [Fact]
     public void Completing_an_order_stamps_the_completion_time()
     {
-        var order = PickupOrder();
-        order.Accept(StaffId);
-        order.StartPreparing(StaffId);
-        order.MarkReady(StaffId);
+        var order = ReadyOrder();
 
         order.Complete(StaffId);
 
@@ -218,10 +210,7 @@ public class OrderTests
     public void Marking_a_delivery_order_ready_collects_it()
     {
         var order = DeliveryOrder();
-        order.Accept(StaffId);
-        order.StartPreparing(StaffId);
-
-        order.MarkReady(StaffId);
+        TakeToReady(order);
 
         order.Status.Should().Be(OrderStatus.Ready);
         order.DeliveryStatus.Should().Be(DeliveryStatus.Collected);
@@ -231,10 +220,7 @@ public class OrderTests
     public void Completing_a_delivery_order_marks_it_delivered()
     {
         var order = DeliveryOrder();
-        order.Accept(StaffId);
-        order.StartPreparing(StaffId);
-        order.MarkReady(StaffId);
-
+        TakeToReady(order);
         order.Complete(StaffId);
 
         order.DeliveryStatus.Should().Be(DeliveryStatus.Delivered);
@@ -243,11 +229,7 @@ public class OrderTests
     [Fact]
     public void Completing_a_pickup_order_leaves_delivery_status_not_applicable()
     {
-        var order = PickupOrder();
-        order.Accept(StaffId);
-        order.StartPreparing(StaffId);
-        order.MarkReady(StaffId);
-
+        var order = ReadyOrder();
         order.Complete(StaffId);
 
         order.DeliveryStatus.Should().Be(DeliveryStatus.NotApplicable);
@@ -268,10 +250,35 @@ public class OrderTests
         history.Should().OnlyContain(h => h.ChangedByUserId == StaffId);
     }
 
+    private static OrderItem AddBurger(Order order, int quantity = 1, decimal unitPrice = 50m) =>
+        order.AddItem(Guid.NewGuid(), quantity, unitPrice);
+
+    private static void TakeToReady(Order order)
+    {
+        order.Accept(StaffId);
+        order.StartPreparing(StaffId);
+        order.MarkReady(StaffId);
+    }
+
     private static Order PickupOrder() => Order.Create(
         CustomerId, RestaurantId, FulfilmentType.Pickup, PaymentMethod.CashOnDelivery);
 
-    private static Order DeliveryOrder() => Order.Create(
-        CustomerId, RestaurantId, FulfilmentType.Delivery, PaymentMethod.CashOnDelivery,
-        deliveryAddress: "12 Nile St, Cairo");
+    private static Order DeliveryOrder(string? deliveryAddress = "12 Nile St, Cairo") => Order.Create(
+        CustomerId, RestaurantId, FulfilmentType.Delivery, PaymentMethod.CashOnDelivery, deliveryAddress);
+
+    private static Order ReadyOrder()
+    {
+        var order = PickupOrder();
+        TakeToReady(order);
+
+        return order;
+    }
+
+    private static Order CompletedOrder()
+    {
+        var order = ReadyOrder();
+        order.Complete(StaffId);
+
+        return order;
+    }
 }

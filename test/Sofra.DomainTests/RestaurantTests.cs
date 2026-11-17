@@ -10,8 +10,7 @@ public class RestaurantTests
     [Fact]
     public void Cannot_be_created_from_an_application_that_is_not_approved()
     {
-        var application = RestaurantApplication.Create(
-            Guid.NewGuid(), "Sofra Kitchen", "12 Nile St, Cairo", "01000000000", "Family kitchen");
+        var application = PendingApplication();
 
         FluentActions.Invoking(() => Restaurant.FromApprovedApplication(application))
             .Should().Throw<DomainException>();
@@ -76,15 +75,20 @@ public class RestaurantTests
     {
         var restaurant = ApprovedRestaurant();
 
-        FluentActions.Invoking(() =>
-                restaurant.UpdateInfo("   ", "12 Nile St, Cairo", "01000000000", "Family kitchen"))
+        FluentActions.Invoking(() => restaurant.UpdateInfo("   ", Address, Phone, Description))
             .Should().Throw<DomainException>();
     }
 
+    private const string Address = "12 Nile St, Cairo";
+    private const string Phone = "01000000000";
+    private const string Description = "Family kitchen";
+
+    private static RestaurantApplication PendingApplication() => RestaurantApplication.Create(
+        Guid.NewGuid(), "Sofra Kitchen", Address, Phone, Description);
+
     private static Restaurant ApprovedRestaurant()
     {
-        var application = RestaurantApplication.Create(
-            Guid.NewGuid(), "Sofra Kitchen", "12 Nile St, Cairo", "01000000000", "Family kitchen");
+        var application = PendingApplication();
         application.Approve(Guid.NewGuid());
 
         return Restaurant.FromApprovedApplication(application);
