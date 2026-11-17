@@ -10,25 +10,33 @@ public class PaymentTests
     [Fact]
     public void A_payment_amount_must_be_greater_than_zero()
     {
-        FluentActions.Invoking(() => PaymentOf(amount: 0m))
-            .Should().Throw<DomainException>();
+        // Act
+        Action create = () => PaymentOf(amount: 0m);
+
+        // Assert
+        create.Should().Throw<DomainException>();
     }
 
     [Fact]
     public void A_new_payment_starts_pending()
     {
+        // Act
         var payment = PaymentOf();
 
+        // Assert
         payment.Status.Should().Be(PaymentStatus.Pending);
     }
 
     [Fact]
     public void Completing_a_payment_records_the_paid_time_and_metadata()
     {
+        // Arrange
         var payment = PaymentOf(method: PaymentMethod.OnlinePayment);
 
+        // Act
         payment.MarkCompleted("gateway-ref-1");
 
+        // Assert
         payment.Status.Should().Be(PaymentStatus.Completed);
         payment.PaidAt.Should().NotBeNull();
         payment.Metadata.Should().Be("gateway-ref-1");
@@ -37,37 +45,52 @@ public class PaymentTests
     [Fact]
     public void A_completed_payment_cannot_be_completed_again()
     {
+        // Arrange
         var payment = CompletedPayment();
 
-        FluentActions.Invoking(() => payment.MarkCompleted())
-            .Should().Throw<DomainException>();
+        // Act
+        Action completeAgain = () => payment.MarkCompleted();
+
+        // Assert
+        completeAgain.Should().Throw<DomainException>();
     }
 
     [Fact]
     public void A_completed_payment_cannot_be_cancelled()
     {
+        // Arrange
         var payment = CompletedPayment();
 
-        FluentActions.Invoking(() => payment.Cancel())
-            .Should().Throw<DomainException>();
+        // Act
+        Action cancel = () => payment.Cancel();
+
+        // Assert
+        cancel.Should().Throw<DomainException>();
     }
 
     [Fact]
     public void Only_a_completed_payment_can_be_refunded()
     {
+        // Arrange
         var payment = PaymentOf(method: PaymentMethod.OnlinePayment);
 
-        FluentActions.Invoking(() => payment.Refund())
-            .Should().Throw<DomainException>();
+        // Act
+        Action refund = () => payment.Refund();
+
+        // Assert
+        refund.Should().Throw<DomainException>();
     }
 
     [Fact]
     public void Refunding_a_completed_payment_marks_it_refunded()
     {
+        // Arrange
         var payment = CompletedPayment(method: PaymentMethod.OnlinePayment);
 
+        // Act
         payment.Refund();
 
+        // Assert
         payment.Status.Should().Be(PaymentStatus.Refunded);
     }
 

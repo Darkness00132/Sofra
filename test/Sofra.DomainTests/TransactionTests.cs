@@ -10,48 +10,68 @@ public class TransactionTests
     [Fact]
     public void A_transaction_amount_must_be_greater_than_zero()
     {
-        FluentActions.Invoking(() => LedgerEntry(amount: 0m))
-            .Should().Throw<DomainException>();
+        // Act
+        Action create = () => Debit(amount: 0m);
+
+        // Assert
+        create.Should().Throw<DomainException>();
     }
 
     [Fact]
     public void A_new_transaction_is_completed_by_default()
     {
-        var transaction = LedgerEntry(type: TransactionType.Credit);
+        // Act
+        var transaction = Credit();
 
+        // Assert
         transaction.Status.Should().Be(TransactionStatus.Completed);
     }
 
     [Fact]
     public void A_reversed_transaction_cannot_be_marked_failed()
     {
-        var transaction = LedgerEntry();
+        // Arrange
+        var transaction = Debit();
         transaction.Reverse();
 
-        FluentActions.Invoking(() => transaction.MarkFailed())
-            .Should().Throw<DomainException>();
+        // Act
+        Action markFailed = () => transaction.MarkFailed();
+
+        // Assert
+        markFailed.Should().Throw<DomainException>();
     }
 
     [Fact]
     public void A_failed_transaction_cannot_be_marked_failed_again()
     {
-        var transaction = LedgerEntry();
+        // Arrange
+        var transaction = Debit();
         transaction.MarkFailed();
 
-        FluentActions.Invoking(() => transaction.MarkFailed())
-            .Should().Throw<DomainException>();
+        // Act
+        Action markFailedAgain = () => transaction.MarkFailed();
+
+        // Assert
+        markFailedAgain.Should().Throw<DomainException>();
     }
 
     [Fact]
     public void Only_a_completed_transaction_can_be_reversed()
     {
-        var transaction = LedgerEntry();
+        // Arrange
+        var transaction = Debit();
         transaction.MarkFailed();
 
-        FluentActions.Invoking(() => transaction.Reverse())
-            .Should().Throw<DomainException>();
+        // Act
+        Action reverse = () => transaction.Reverse();
+
+        // Assert
+        reverse.Should().Throw<DomainException>();
     }
 
-    private static Transaction LedgerEntry(decimal amount = 100m, TransactionType type = TransactionType.Debit) =>
-        Transaction.Create(type, amount);
+    private static Transaction Debit(decimal amount = 100m) =>
+        Transaction.Create(TransactionType.Debit, amount);
+
+    private static Transaction Credit(decimal amount = 100m) =>
+        Transaction.Create(TransactionType.Credit, amount);
 }
