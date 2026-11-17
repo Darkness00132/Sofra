@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Agent-local folders (ZCode workspace config & skills) — not part of the repo
+.zcode/
+.agents/
