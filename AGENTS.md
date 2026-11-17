@@ -22,21 +22,24 @@ Arrows point inward only. Never add EF/HTTP/`DbContext` to Domain or Application
 - **Domain: complete** — 13 entities, 10 enums, rich model (factories, private setters, `DomainException` guards). **61 classical behavior tests, all green** (`test/Sofra.DomainTests`).
 - **Infrastructure: EF model fully configured** — one `IEntityTypeConfiguration<T>` per entity in `Persistent/Configurations/` (`AppUser`/`AppRole` stay Identity-managed). Money `decimal(18,2)`, delete behaviors protect BR-04, `FoodCategory.Name` unique.
 - **API: infrastructure done** — unified error envelope (`Helper/ApiErrorResponseFactory` + `Helper/ErrorExtensions.ToActionResult`), global exception handling (`Middleware/GlobalExceptionHandler`, `IExceptionHandler`), `ICurrentUser` implemented + registered. **No controllers exist yet.**
-- **Application: `Features/` is empty** — no CQRS feature written yet. Open decision before the first handler: how handlers reach the database (Application has no reference to Infrastructure — e.g. an `IAppDbContext` abstraction; ask the user).
+- **Application: authentication features complete** — `Features/Authentication/` (Register, Login, RefreshAccessToken, Logout, ForgotPassword, ResetPassword, GetProfile) in vertical-slice CQRS with FluentValidation validators; JWT access tokens + persisted single-use refresh tokens (rotated on refresh); OTP password reset emailed via Gmail SMTP (MailKit). **Data access:** `Repository<T>` (slim common ops incl. `SingleOrDefaultAsync`) via `IRepository<T>`; saving/transactions via `IUnitOfWork`; per-entity repos **only** for a genuine requirement; list filters = records in the feature folder, applied by Infrastructure query extensions (`Repositories/QueryableExtensions.cs`). **No other features exist yet.**
 - **Migration is stale** — `20261117083850_Init` covers Identity tables only; all business entities need a migration (or full re-init) before the app can run.
 - Serilog is package-referenced but not wired into `Program.cs`.
+- **CI:** GitHub Actions at `.github/workflows/ci.yml` — restore → build → test on every push/PR to `master`. Keep it green.
 
 ## Working agreement
 
 1. **Plan first.** For any non-trivial change, present the plan (tables/lists of decisions and files to touch) and wait for approval before writing code.
 2. **The user dictates architecture verbatim.** When the user names a type, pattern, or package, use it exactly — no renaming, restructuring, or "better" substitutes without asking.
-3. **Skills.** Project skills live in `.agents/skills/` (flat files, not auto-loaded — this list is the index). **Read the matching one before working in that layer:**
+3. **Never commit (or push/PR) until the user explicitly says so.** Finished, verified work stays uncommitted in the working tree; wait for the instruction.
+4. **Skills.** Project skills live in `.agents/skills/` (flat files, not auto-loaded — this list is the index). **Read the matching one before working in that layer:**
    - `creating-domain-entities.md` — entity recipe, weak entities, BR enforcement map
    - `adding-cqrs-features.md` — MediatR 15 layout, Result/Error conventions, `ICurrentUser` usage
    - `api-endpoints.md` — error envelope, `ToActionResult`, exception handler, controller rules
    - `working-with-the-database.md` — configurations, migration workflow, stale-migration warning
    - `writing-domain-tests.md` — classical behavior tests, FluentAssertions, plain-English names, DRY helpers
-4. SRS business rules are the source of truth for domain behavior; when code and doc conflict, surface it — don't silently pick a side.
+   - `naming-conventions.md` — names must say what the thing does, in domain vocabulary; no vague category words; offer options
+5. SRS business rules are the source of truth for domain behavior; when code and doc conflict, surface it — don't silently pick a side.
 
 ## Commands
 
