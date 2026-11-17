@@ -10,8 +10,9 @@ public class PaymentTests
     [Fact]
     public void A_payment_amount_must_be_greater_than_zero()
     {
-        Assert.Throws<DomainException>(() =>
-            Payment.Create(Guid.NewGuid(), amount: 0m, PaymentMethod.CashOnDelivery));
+        FluentActions.Invoking(() =>
+                Payment.Create(Guid.NewGuid(), amount: 0m, PaymentMethod.CashOnDelivery))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -19,7 +20,7 @@ public class PaymentTests
     {
         var payment = Payment.Create(Guid.NewGuid(), 100m, PaymentMethod.CashOnDelivery);
 
-        Assert.Equal(PaymentStatus.Pending, payment.Status);
+        payment.Status.Should().Be(PaymentStatus.Pending);
     }
 
     [Fact]
@@ -29,9 +30,9 @@ public class PaymentTests
 
         payment.MarkCompleted("gateway-ref-1");
 
-        Assert.Equal(PaymentStatus.Completed, payment.Status);
-        Assert.NotNull(payment.PaidAt);
-        Assert.Equal("gateway-ref-1", payment.Metadata);
+        payment.Status.Should().Be(PaymentStatus.Completed);
+        payment.PaidAt.Should().NotBeNull();
+        payment.Metadata.Should().Be("gateway-ref-1");
     }
 
     [Fact]
@@ -40,7 +41,8 @@ public class PaymentTests
         var payment = Payment.Create(Guid.NewGuid(), 100m, PaymentMethod.CashOnDelivery);
         payment.MarkCompleted();
 
-        Assert.Throws<DomainException>(() => payment.MarkCompleted());
+        FluentActions.Invoking(() => payment.MarkCompleted())
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -49,7 +51,8 @@ public class PaymentTests
         var payment = Payment.Create(Guid.NewGuid(), 100m, PaymentMethod.CashOnDelivery);
         payment.MarkCompleted();
 
-        Assert.Throws<DomainException>(() => payment.Cancel());
+        FluentActions.Invoking(() => payment.Cancel())
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -57,7 +60,8 @@ public class PaymentTests
     {
         var payment = Payment.Create(Guid.NewGuid(), 100m, PaymentMethod.OnlinePayment);
 
-        Assert.Throws<DomainException>(() => payment.Refund());
+        FluentActions.Invoking(() => payment.Refund())
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -68,6 +72,6 @@ public class PaymentTests
 
         payment.Refund();
 
-        Assert.Equal(PaymentStatus.Refunded, payment.Status);
+        payment.Status.Should().Be(PaymentStatus.Refunded);
     }
 }

@@ -18,15 +18,16 @@ public class OrderTests
     {
         var order = PickupOrder();
 
-        Assert.Equal(OrderStatus.Pending, order.Status);
-        Assert.Equal(0m, order.Total);
+        order.Status.Should().Be(OrderStatus.Pending);
+        order.Total.Should().Be(0m);
     }
 
     [Fact]
     public void A_delivery_order_requires_a_delivery_address()
     {
-        Assert.Throws<DomainException>(() => Order.Create(
-            CustomerId, RestaurantId, FulfilmentType.Delivery, PaymentMethod.CashOnDelivery, deliveryAddress: null));
+        FluentActions.Invoking(() => Order.Create(
+                CustomerId, RestaurantId, FulfilmentType.Delivery, PaymentMethod.CashOnDelivery, deliveryAddress: null))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -34,7 +35,7 @@ public class OrderTests
     {
         var order = DeliveryOrder();
 
-        Assert.Equal(DeliveryStatus.Pending, order.DeliveryStatus);
+        order.DeliveryStatus.Should().Be(DeliveryStatus.Pending);
     }
 
     [Fact]
@@ -42,7 +43,7 @@ public class OrderTests
     {
         var order = PickupOrder();
 
-        Assert.Equal(DeliveryStatus.NotApplicable, order.DeliveryStatus);
+        order.DeliveryStatus.Should().Be(DeliveryStatus.NotApplicable);
     }
 
     [Fact]
@@ -51,7 +52,8 @@ public class OrderTests
         var order = PickupOrder();
         order.Accept(StaffId);
 
-        Assert.Throws<DomainException>(() => order.AddItem(Guid.NewGuid(), quantity: 1, unitPrice: 50m));
+        FluentActions.Invoking(() => order.AddItem(Guid.NewGuid(), quantity: 1, unitPrice: 50m))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -59,7 +61,8 @@ public class OrderTests
     {
         var order = PickupOrder();
 
-        Assert.Throws<DomainException>(() => order.AddItem(Guid.NewGuid(), quantity: 0, unitPrice: 50m));
+        FluentActions.Invoking(() => order.AddItem(Guid.NewGuid(), quantity: 0, unitPrice: 50m))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -67,7 +70,8 @@ public class OrderTests
     {
         var order = PickupOrder();
 
-        Assert.Throws<DomainException>(() => order.AddItem(Guid.NewGuid(), quantity: 1, unitPrice: -1m));
+        FluentActions.Invoking(() => order.AddItem(Guid.NewGuid(), quantity: 1, unitPrice: -1m))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -78,7 +82,7 @@ public class OrderTests
 
         order.RemoveItem(item.Id);
 
-        Assert.Empty(order.OrderItems);
+        order.OrderItems.Should().BeEmpty();
     }
 
     [Fact]
@@ -86,7 +90,8 @@ public class OrderTests
     {
         var order = PickupOrder();
 
-        Assert.Throws<DomainException>(() => order.SetTotals(tax: 0m, deliveryFee: 0m, discount: 0m));
+        FluentActions.Invoking(() => order.SetTotals(tax: 0m, deliveryFee: 0m, discount: 0m))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -95,7 +100,8 @@ public class OrderTests
         var order = PickupOrder();
         order.AddItem(Guid.NewGuid(), quantity: 1, unitPrice: 50m);
 
-        Assert.Throws<DomainException>(() => order.SetTotals(tax: -1m, deliveryFee: 0m, discount: 0m));
+        FluentActions.Invoking(() => order.SetTotals(tax: -1m, deliveryFee: 0m, discount: 0m))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -104,7 +110,8 @@ public class OrderTests
         var order = PickupOrder();
         order.AddItem(Guid.NewGuid(), quantity: 2, unitPrice: 50m);   // subtotal 100
 
-        Assert.Throws<DomainException>(() => order.SetTotals(tax: 0m, deliveryFee: 0m, discount: 150m));
+        FluentActions.Invoking(() => order.SetTotals(tax: 0m, deliveryFee: 0m, discount: 150m))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -115,8 +122,8 @@ public class OrderTests
 
         order.SetTotals(tax: 5m, deliveryFee: 10m, discount: 10m);
 
-        Assert.Equal(100m, order.Subtotal);
-        Assert.Equal(105m, order.Total);
+        order.Subtotal.Should().Be(100m);
+        order.Total.Should().Be(105m);
     }
 
     [Fact]
@@ -125,8 +132,9 @@ public class OrderTests
         var order = PickupOrder();
         order.Accept(StaffId);
 
-        Assert.Equal(OrderStatus.Accepted, order.Status);
-        Assert.Throws<DomainException>(() => order.Accept(StaffId));
+        order.Status.Should().Be(OrderStatus.Accepted);
+        FluentActions.Invoking(() => order.Accept(StaffId))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -134,7 +142,8 @@ public class OrderTests
     {
         var order = PickupOrder();
 
-        Assert.Throws<DomainException>(() => order.StartPreparing(StaffId));
+        FluentActions.Invoking(() => order.StartPreparing(StaffId))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -143,7 +152,8 @@ public class OrderTests
         var order = PickupOrder();
         order.Accept(StaffId);
 
-        Assert.Throws<DomainException>(() => order.MarkReady(StaffId));
+        FluentActions.Invoking(() => order.MarkReady(StaffId))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -152,7 +162,8 @@ public class OrderTests
         var order = PickupOrder();
         order.Accept(StaffId);
 
-        Assert.Throws<DomainException>(() => order.Complete(StaffId));
+        FluentActions.Invoking(() => order.Complete(StaffId))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -161,7 +172,8 @@ public class OrderTests
         var order = PickupOrder();
         order.Accept(StaffId);
 
-        Assert.Throws<DomainException>(() => order.Reject("Out of stock", StaffId));
+        FluentActions.Invoking(() => order.Reject("Out of stock", StaffId))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -171,7 +183,7 @@ public class OrderTests
 
         order.Cancel(OrderCancellationReason.CustomerRequested, note: null, changedBy: CustomerId);
 
-        Assert.Equal(OrderStatus.Cancelled, order.Status);
+        order.Status.Should().Be(OrderStatus.Cancelled);
     }
 
     [Fact]
@@ -183,8 +195,9 @@ public class OrderTests
         order.MarkReady(StaffId);
         order.Complete(StaffId);
 
-        Assert.Throws<DomainException>(() =>
-            order.Cancel(OrderCancellationReason.CustomerRequested, note: null, changedBy: CustomerId));
+        FluentActions.Invoking(() =>
+                order.Cancel(OrderCancellationReason.CustomerRequested, note: null, changedBy: CustomerId))
+            .Should().Throw<DomainException>();
     }
 
     [Fact]
@@ -197,8 +210,8 @@ public class OrderTests
 
         order.Complete(StaffId);
 
-        Assert.Equal(OrderStatus.Completed, order.Status);
-        Assert.NotNull(order.CompletedAt);
+        order.Status.Should().Be(OrderStatus.Completed);
+        order.CompletedAt.Should().NotBeNull();
     }
 
     [Fact]
@@ -210,8 +223,8 @@ public class OrderTests
 
         order.MarkReady(StaffId);
 
-        Assert.Equal(OrderStatus.Ready, order.Status);
-        Assert.Equal(DeliveryStatus.Collected, order.DeliveryStatus);
+        order.Status.Should().Be(OrderStatus.Ready);
+        order.DeliveryStatus.Should().Be(DeliveryStatus.Collected);
     }
 
     [Fact]
@@ -224,7 +237,7 @@ public class OrderTests
 
         order.Complete(StaffId);
 
-        Assert.Equal(DeliveryStatus.Delivered, order.DeliveryStatus);
+        order.DeliveryStatus.Should().Be(DeliveryStatus.Delivered);
     }
 
     [Fact]
@@ -237,7 +250,7 @@ public class OrderTests
 
         order.Complete(StaffId);
 
-        Assert.Equal(DeliveryStatus.NotApplicable, order.DeliveryStatus);
+        order.DeliveryStatus.Should().Be(DeliveryStatus.NotApplicable);
     }
 
     [Fact]
@@ -248,10 +261,11 @@ public class OrderTests
         order.Accept(StaffId);
         order.StartPreparing(StaffId);
 
-        Assert.Equal(2, order.StatusHistory.Count);
-        Assert.Equal(OrderStatus.Accepted, order.StatusHistory.ElementAt(0).Status);
-        Assert.Equal(OrderStatus.Preparing, order.StatusHistory.ElementAt(1).Status);
-        Assert.All(order.StatusHistory, h => Assert.Equal(StaffId, h.ChangedByUserId));
+        var history = order.StatusHistory.ToList();
+        history.Should().HaveCount(2);
+        history[0].Status.Should().Be(OrderStatus.Accepted);
+        history[1].Status.Should().Be(OrderStatus.Preparing);
+        history.Should().OnlyContain(h => h.ChangedByUserId == StaffId);
     }
 
     private static Order PickupOrder() => Order.Create(
