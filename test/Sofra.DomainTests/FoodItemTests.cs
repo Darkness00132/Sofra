@@ -58,6 +58,48 @@ public class FoodItemTests
         item.IsAvailable.Should().BeTrue();
     }
 
+    [Fact]
+    public void A_food_item_can_be_given_a_picture()
+    {
+        // Arrange
+        var item = Burger();
+
+        // Act
+        item.SetImage("https://res.cloudinary.com/sofra/burger.png", "burger-public-id");
+
+        // Assert
+        item.ImageUrl.Should().Be("https://res.cloudinary.com/sofra/burger.png");
+        item.ImagePublicId.Should().Be("burger-public-id");
+    }
+
+    [Fact]
+    public void A_food_item_image_cannot_be_set_to_an_empty_url()
+    {
+        // Arrange
+        var item = Burger();
+
+        // Act
+        Action setImage = () => item.SetImage("   ", "burger-public-id");
+
+        // Assert
+        setImage.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Clearing_a_food_item_picture_removes_its_references()
+    {
+        // Arrange
+        var item = Burger();
+        item.SetImage("https://res.cloudinary.com/sofra/burger.png", "burger-public-id");
+
+        // Act
+        item.ClearImage();
+
+        // Assert
+        item.ImageUrl.Should().BeNull();
+        item.ImagePublicId.Should().BeNull();
+    }
+
     private static FoodItem Burger(decimal price = 50m) =>
         FoodItem.Create(Guid.NewGuid(), "Burger", "Beef burger", price);
 }

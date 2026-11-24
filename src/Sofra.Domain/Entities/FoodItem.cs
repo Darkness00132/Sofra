@@ -12,6 +12,10 @@ public class FoodItem : AuditableEntity
 
     public decimal Price { get; private set; }
 
+    public string? ImageUrl { get; private set; }
+
+    public string? ImagePublicId { get; private set; }
+
     public FoodAvailability Availability { get; private set; }
 
     public Guid FoodTypeId { get; private set; }
@@ -78,6 +82,23 @@ public class FoodItem : AuditableEntity
     public void MakeAvailable() => Availability = FoodAvailability.Available;
 
     public void MakeUnavailable() => Availability = FoodAvailability.Unavailable;
+
+    /// <summary>Points the item at its stored picture. The file itself is managed by the file storage service.</summary>
+    public void SetImage(string imageUrl, string? publicId)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+            throw new DomainException("Image URL is required.");
+
+        ImageUrl = imageUrl;
+        ImagePublicId = publicId;
+    }
+
+    /// <summary>Removes the picture reference (the stored file is deleted by the file storage service).</summary>
+    public void ClearImage()
+    {
+        ImageUrl = null;
+        ImagePublicId = null;
+    }
 
     public bool IsAvailable => Availability == FoodAvailability.Available;
 }

@@ -22,6 +22,10 @@ public class Restaurant : AuditableEntity
 
     public bool IsAcceptingOrders { get; private set; }
 
+    public string? ImageUrl { get; private set; }
+
+    public string? ImagePublicId { get; private set; }
+
     public ICollection<FoodType> FoodTypes { get; private set; } = [];
     public ICollection<Order> Orders { get; private set; } = [];
     public ICollection<RestaurantApplication> Applications { get; private set; } = [];
@@ -67,6 +71,23 @@ public class Restaurant : AuditableEntity
     }
 
     public void SetAcceptingOrders(bool accepting) => IsAcceptingOrders = accepting;
+
+    /// <summary>Points the restaurant at its stored picture. The file itself is managed by the file storage service.</summary>
+    public void SetImage(string imageUrl, string? publicId)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+            throw new DomainException("Image URL is required.");
+
+        ImageUrl = imageUrl;
+        ImagePublicId = publicId;
+    }
+
+    /// <summary>Removes the picture reference (the stored file is deleted by the file storage service).</summary>
+    public void ClearImage()
+    {
+        ImageUrl = null;
+        ImagePublicId = null;
+    }
 
     public void Suspend()
     {
