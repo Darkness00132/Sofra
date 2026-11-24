@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -19,11 +20,14 @@ public class RolesSeedingService(IServiceScopeFactory scopeFactory, ILogger<Role
         using var scope = scopeFactory.CreateScope();
         var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<AppRole>>();
 
-        foreach (var roleName in Roles.All)
-        {
-            if (await roleManager.RoleExistsAsync(roleName))
-                continue;
+        // Read all role names once, then create only the roles that are actually missing.
+        var existingRoleNames = await roleManager.Roles
+            .Where(r => r.Name != null)
+            .Select(r => r.Name!)
+            .ToListAsync(cancellationToken);
 
+        foreach (var roleName in Roles.All.Except(existingRoleNames, StringComparer.Ordinal))
+        {
             await roleManager.CreateAsync(new AppRole { Name = roleName });
             logger.LogInformation("Seeded role {RoleName}", roleName);
         }
