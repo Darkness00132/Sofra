@@ -1,5 +1,3 @@
-using Sofra.Application.Common.Results;
-
 namespace Sofra.Application.Common.Interfaces;
 
 /// <summary>
@@ -10,10 +8,9 @@ namespace Sofra.Application.Common.Interfaces;
 public interface ICurrentUser
 {
     /// <summary>
-    /// The authenticated user's id. When there is no authenticated user (or the id claim is
-    /// missing), returns an <see cref="ErrorType.Unauthorized"/> failure — never null.
+    /// Returns the authenticated user's id. Throws when the id claim is missing or unparseable.
     /// </summary>
-    Result<Guid> GetUserId();
+    Guid GetUserId();
 
     /// <summary>True when the current user belongs to the given role (Customer / Restaurant / Administrator).</summary>
     bool IsInRole(string role);

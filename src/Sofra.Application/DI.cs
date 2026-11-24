@@ -2,6 +2,8 @@
 using Mapster;
 using Microsoft.Extensions.DependencyInjection;
 using Sofra.Application.Behaviours;
+using Sofra.Application.Common.Interfaces;
+using Sofra.Application.Services;
 
 namespace Sofra.Application;
 
@@ -19,7 +21,12 @@ public static class DI
 
         services.AddValidatorsFromAssembly(assembly);
 
+        services.AddScoped<IRestaurantOwnershipGuard, RestaurantOwnershipGuard>();
+
         services.AddMapster();
+
+        // this package's AddMapster does not auto-discover IRegister classes — scan explicitly
+        TypeAdapterConfig.GlobalSettings.Scan(typeof(DI).Assembly);
 
         return services;
     }

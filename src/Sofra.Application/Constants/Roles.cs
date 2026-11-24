@@ -1,3 +1,4 @@
+using Sofra.Domain.Entities;
 namespace Sofra.Application.Constants;
 
 /// <summary>Role names used by Identity authorization across the platform.</summary>

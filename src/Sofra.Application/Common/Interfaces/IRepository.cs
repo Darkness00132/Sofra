@@ -1,3 +1,4 @@
+using Sofra.Application.Common.Pagination;
 using System.Linq.Expressions;
 
 namespace Sofra.Application.Common.Interfaces;
@@ -24,6 +25,9 @@ public interface IRepository<T> where T : class
 
     /// <summary>Lists all entities, or only those matching the predicate.</summary>
     Task<IReadOnlyList<T>> ListAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default);
+
+    /// <summary>Filters stay in entity-specific repositories; this handles only the common paging.</summary>
+    Task<PagedResult<TDto>> ToPagedResultAsync<TDto>(IQueryable<TDto> query, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
 
     /// <summary>Marks a new entity for insertion (persisted by <see cref="IUnitOfWork.SaveChangesAsync"/>).</summary>
     Task AddAsync(T entity, CancellationToken cancellationToken = default);
