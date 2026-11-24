@@ -9,4 +9,5 @@ public record LoginResponse(
     string AccessToken,
     string RefreshToken,
     DateTime AccessTokenExpiresAtUtc,
-    AuthUserResponse User);
+    AuthUserResponse User,
+    string? EmailConfirmationToken = null);

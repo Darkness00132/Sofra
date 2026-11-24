@@ -1,3 +1,4 @@
+using Sofra.Application.Constants;
 namespace Sofra.Application.Features.Authentication.GetProfile;
 
 /// <summary>The signed-in user's profile information.</summary>

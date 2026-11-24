@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Sofra.Application.Common.Interfaces;
 using Sofra.Application.Common.Results;
 using Sofra.Domain.Entities;
+using Sofra.Application.Constants;
 
 namespace Sofra.Application.Features.Authentication.GetProfile;
 
@@ -14,10 +15,8 @@ public class GetProfileQueryHandler(
     public async Task<Result<UserProfileResponse>> Handle(GetProfileQuery request, CancellationToken cancellationToken)
     {
         var userId = currentUser.GetUserId();
-        if (userId.IsFailure)
-            return Result<UserProfileResponse>.Failure(userId.Error!);
 
-        var user = await userManager.FindByIdAsync(userId.Response.ToString());
+        var user = await userManager.FindByIdAsync(userId.ToString());
         if (user is null)
             return Result<UserProfileResponse>.Failure(Error.NotFound(
                 "USER_NOT_FOUND",

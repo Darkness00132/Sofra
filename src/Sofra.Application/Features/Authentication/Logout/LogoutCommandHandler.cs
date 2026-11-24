@@ -14,8 +14,8 @@ public class LogoutCommandHandler(IRepository<RefreshToken> refreshTokens, IUnit
             t => t.Token == request.RefreshToken, cancellationToken);
 
         if (storedToken is null)
-            return Result.Failure(Error.NotFound(
-                "REFRESH_TOKEN_NOT_FOUND",
+            return Result.Failure(Error.Unauthorized(
+                "INVALID_REFRESH_TOKEN",
                 "The refresh token is invalid or already revoked."));
 
         if (storedToken.IsActive)

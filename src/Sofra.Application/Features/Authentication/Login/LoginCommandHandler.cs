@@ -20,6 +20,16 @@ public class LoginCommandHandler(
                 "INVALID_CREDENTIALS",
                 "Email or password is incorrect."));
 
+        if (!user.EmailConfirmed)
+            return Result<LoginResponse>.Failure(Error.Unauthorized(
+                "EMAIL_NOT_CONFIRMED",
+                "Please verify your email address before signing in."));
+
+        if (await userManager.IsLockedOutAsync(user))
+            return Result<LoginResponse>.Failure(Error.Unauthorized(
+                "ACCOUNT_LOCKED",
+                "This account has been locked. Contact support."));
+
         var tokens = await tokenProvider.GenerateTokensAsync(user, cancellationToken);
 
         return new LoginResponse(

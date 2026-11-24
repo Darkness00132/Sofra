@@ -31,7 +31,16 @@ public class RegisterCommandHandler(
                 description));
         }
 
-        await userManager.AddToRoleAsync(user, Roles.Customer);
+        var roleResult = await userManager.AddToRoleAsync(user, Roles.Customer);
+        if (!roleResult.Succeeded)
+        {
+            await userManager.DeleteAsync(user);
+            return Result<LoginResponse>.Failure(Error.Internal(
+                "ROLE_ASSIGNMENT_FAILED",
+                "The new account could not be assigned the Customer role."));
+        }
+
+        var confirmationToken = await userManager.GenerateEmailConfirmationTokenAsync(user);
 
         var tokens = await tokenProvider.GenerateTokensAsync(user, cancellationToken);
 
@@ -39,6 +48,7 @@ public class RegisterCommandHandler(
             tokens.AccessToken,
             tokens.RefreshToken,
             tokens.AccessTokenExpiresAtUtc,
-            user.Adapt<AuthUserResponse>());
+            user.Adapt<AuthUserResponse>(),
+            confirmationToken);
     }
 }

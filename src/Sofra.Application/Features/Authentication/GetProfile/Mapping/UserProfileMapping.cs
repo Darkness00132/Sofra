@@ -1,5 +1,6 @@
 using Mapster;
 using Sofra.Domain.Entities;
+using Sofra.Application.Constants;
 
 namespace Sofra.Application.Features.Authentication.GetProfile.Mapping;
 
