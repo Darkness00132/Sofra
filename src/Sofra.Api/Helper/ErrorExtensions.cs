@@ -9,8 +9,23 @@ namespace Sofra.Api.Helper
         /// Maps a failed <see cref="Result"/>'s <see cref="Error"/> to the unified error
         /// response. Controllers call this instead of inheriting a base controller.
         /// </summary>
-        public static IActionResult ToActionResult(this Error error, HttpContext httpContext)
+        public static IActionResult ToActionResult(this Error? error, HttpContext httpContext)
         {
+            if (error is null)
+            {
+                var fallback = ApiErrorResponseFactory.Create(
+                    httpContext,
+                    StatusCodes.Status500InternalServerError,
+                    "Internal Server Error",
+                    "INTERNAL_SERVER_ERROR",
+                    "An unexpected error occurred.");
+
+                return new ObjectResult(fallback)
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
+            }
+
             var (status, title) = error.Type switch
             {
                 ErrorType.Validation => (StatusCodes.Status400BadRequest, "Validation Error"),

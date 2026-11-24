@@ -35,6 +35,13 @@ public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IE
                 .GroupBy(e => e.PropertyName)
                 .ToDictionary(g => g.Key, g => g.Select(e => e.ErrorMessage).ToArray());
         }
+        else if (exception is UnauthorizedAccessException)
+        {
+            status = StatusCodes.Status401Unauthorized;
+            title = "Authentication Required";
+            code = "AUTHENTICATION_REQUIRED";
+            detail = exception.Message;
+        }
         else if (exception is DomainException domain)
         {
             status = StatusCodes.Status422UnprocessableEntity;

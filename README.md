@@ -24,7 +24,7 @@ Sofra is a **multi-vendor restaurant ordering marketplace**: customers discover 
 Sofra.Domain          entities, enums, DomainException — rich domain model, no framework deps
 Sofra.Application     CQRS features, Result/Error, pagination, ICurrentUser interface
 Sofra.Infrastructure  EF Core (SQL Server), Identity, audit interceptor, entity configurations
-Sofra.Presentation    the Sofra.Api project — versioned REST API, error envelope, docs UI
+Sofra.Api            the versioned REST API — controllers, error envelope, docs UI
 docs/                 PRD and SRS (business rules BR-01…BR-11 are normative)
 test/                 Sofra.DomainTests — domain behavior suite
 ```
@@ -37,7 +37,7 @@ test/                 Sofra.DomainTests — domain behavior suite
 git clone <repo-url> && cd Sofra
 dotnet build
 dotnet test          # 61 domain behavior tests
-dotnet run --project src/Sofra.Presentation
+dotnet run --project src/Sofra.Api
 ```
 
 - API: `https://localhost:7265`
@@ -49,7 +49,7 @@ dotnet run --project src/Sofra.Presentation
 ```bash
 dotnet ef database drop --force
 # delete src/Sofra.Infrastructure/Persistent/Migrations/*
-dotnet ef migrations add Init --startup-project src/Sofra.Presentation
+dotnet ef migrations add Init --startup-project src/Sofra.Api
 dotnet ef database update
 ```
 

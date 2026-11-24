@@ -15,13 +15,24 @@ builder.Services.AddApplication()
     .AddApi(builder.Configuration)
     .AddJwtAuthentication(builder.Configuration);
 
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins(
+                "http://localhost:5173",
+                "https://localhost:5173")
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();
 
 app.UseSerilogRequestLogging();
-
+app.UseCors();
 app.UseExceptionHandler();
 app.UseHttpsRedirection();
 

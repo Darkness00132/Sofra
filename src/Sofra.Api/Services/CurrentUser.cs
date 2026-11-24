@@ -1,23 +1,20 @@
 using System.Security.Claims;
 using Sofra.Application.Common.Interfaces;
-using Sofra.Application.Common.Results;
 
 namespace Sofra.Api.Services;
 
 /// <summary>
 /// HttpContext-backed implementation of <see cref="ICurrentUser"/>. A missing/unparseable user
-/// id yields an Unauthorized failure (never null), which handlers propagate as a 401 response.
+/// id throws <see cref="UnauthorizedAccessException"/>, which the API maps to a 401 response.
 /// </summary>
 public class CurrentUser(IHttpContextAccessor httpContextAccessor) : ICurrentUser
 {
-    public Result<Guid> GetUserId()
+    public Guid GetUserId()
     {
         var value = httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
 
         if (!Guid.TryParse(value, out var userId))
-            return Result<Guid>.Failure(Error.Unauthorized(
-                "AUTHENTICATION_REQUIRED",
-                "You must be signed in to perform this operation."));
+            throw new UnauthorizedAccessException("You must be signed in to perform this operation.");
 
         return userId;
     }

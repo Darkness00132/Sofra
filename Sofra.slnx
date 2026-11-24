@@ -3,12 +3,13 @@
     <File Path="docs/PRD.md" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/Sofra.Api/Sofra.Api.csproj" />
     <Project Path="src/Sofra.Application/Sofra.Application.csproj" />
     <Project Path="src/Sofra.Domain/Sofra.Domain.csproj" Id="e32c1eaa-730c-4c8e-b689-1570fcdf5875" />
     <Project Path="src/Sofra.Infrastructure/Sofra.Infrastructure.csproj" Id="180e5b3d-e0c0-42ab-a54a-aaa3abd48e03" />
-    <Project Path="src/Sofra.Presentation/Sofra.Api.csproj" />
   </Folder>
   <Folder Name="/test/">
+    <Project Path="Sofra.ApplicationTests/Sofra.ApplicationTests.csproj" Id="94a2fc5d-4b61-43cc-b8f7-4a4fdc305bdf" />
     <Project Path="test/Sofra.DomainTests/Sofra.DomainTests.csproj" Id="32790099-22c1-41ec-b500-b0b54b395c84" />
   </Folder>
 </Solution>
