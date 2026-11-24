@@ -318,6 +318,12 @@ namespace Sofra.Infrastructure.Persistent.Migrations
                     b.Property<Guid>("FoodTypeId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("ImagePublicId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTimeOffset?>("LastModifiedAt")
                         .HasColumnType("datetimeoffset");
 
@@ -629,6 +635,12 @@ namespace Sofra.Infrastructure.Persistent.Migrations
                         .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("ImagePublicId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsAcceptingOrders")
                         .HasColumnType("bit");
