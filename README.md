@@ -25,7 +25,8 @@ Sofra.Domain          entities, enums, DomainException — rich domain model, no
 Sofra.Application     CQRS features, Result/Error, pagination, ICurrentUser interface
 Sofra.Infrastructure  EF Core (SQL Server), Identity, audit interceptor, entity configurations
 Sofra.Api            the versioned REST API — controllers, error envelope, docs UI
-docs/                 PRD and SRS (business rules BR-01…BR-11 are normative)
+src/frontend          React 19 + TypeScript + Vite SPA (npm project, not part of the .NET solution)
+docs/                 PRD (normative business rules BR-01…BR-11), architecture docs, ERD, API reference
 test/                 Sofra.DomainTests — domain behavior suite
 ```
 
@@ -36,28 +37,24 @@ test/                 Sofra.DomainTests — domain behavior suite
 ```bash
 git clone <repo-url> && cd Sofra
 dotnet build
-dotnet test          # 61 domain behavior tests
+dotnet test          # domain behavior suite
 dotnet run --project src/Sofra.Api
 ```
 
-- API: `https://localhost:7265`
+- API: `https://localhost:7265` (also `http://localhost:5183`)
 - Docs (Development only): Scalar UI at `/scalar/v1`, OpenAPI at `/openapi/v1.json`
+- Frontend: `npm run dev` in `src/frontend/` → `http://localhost:5173` (proxies `/api` to the API)
 - Connection string: `appsettings.json` → `DefaultConnection` (defaults to `localhost` with trusted connection)
-
-**Database note:** the current `Init` migration predates the domain model and only covers the Identity tables. Before running the app, regenerate migrations:
-
-```bash
-dotnet ef database drop --force
-# delete src/Sofra.Infrastructure/Persistent/Migrations/*
-dotnet ef migrations add Init --startup-project src/Sofra.Api
-dotnet ef database update
-```
+- Migrations apply automatically at startup (hosted service); the admin account is seeded on first run.
 
 ## Documentation
 
-- [`docs/PRD.md`](docs/PRD.md) — product requirements, MVP scope
-- [`docs/SRS.md`](docs/SRS.md) — functional requirements, business rules (BR-01…BR-11), order lifecycle
+- [`docs/PRD.md`](docs/PRD.md) — product requirements, business rules (BR-01…BR-11), functional requirements, open decisions
+- [`docs/backend-architecture.md`](docs/backend-architecture.md) — backend architecture (projects, layers, CQRS, API conventions)
+- [`docs/frontend-architecture.md`](docs/frontend-architecture.md) — frontend architecture (React, feature slices, shared layer)
+- [`docs/erd.md`](docs/erd.md) — entity-relationship diagram of the database
+- [`docs/API.md`](docs/API.md) — endpoint reference
 
 ## Status
 
-MVP in progress: domain model complete and behavior-tested, persistence and API infrastructure in place. CQRS features and controllers are next. Several business decisions remain open (payment methods, guest checkout, cancellation policy — see SRS §8).
+MVP v1 complete and behavior-tested: domain model, all CQRS features and controllers, persistence with migrations, and the frontend. Several business decisions remain open (revenue model, delivery responsibility, guest checkout, cancellation policy — see PRD §13).
