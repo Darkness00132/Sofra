@@ -1,6 +1,7 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Sofra.Application.Common.Interfaces;
+using Sofra.Application.Common.Pagination;
 using Sofra.Infrastructure.Persistent;
 
 namespace Sofra.Infrastructure.Repositories;
@@ -8,6 +9,9 @@ namespace Sofra.Infrastructure.Repositories;
 /// <summary>EF Core repository for one entity type over <see cref="SofraDbContext"/> — the common operations only.</summary>
 public class Repository<T>(SofraDbContext context) : IRepository<T> where T : class
 {
+    /// <summary>The shared context for specialized repositories that extend the common operations.</summary>
+    protected SofraDbContext Context { get; } = context;
+
     public Task<T?> FindAsync(Guid id, CancellationToken cancellationToken = default) =>
         context.Set<T>().FindAsync([id], cancellationToken).AsTask();
 
@@ -30,4 +34,11 @@ public class Repository<T>(SofraDbContext context) : IRepository<T> where T : cl
 
     public void Delete(T entity) =>
         context.Set<T>().Remove(entity);
+
+    public async Task<PagedResult<TDto>> ToPagedResultAsync<TDto>(IQueryable<TDto> query, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+    {
+        var totalCount = await query.CountAsync(cancellationToken);
+        var items = await query.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToListAsync(cancellationToken);
+        return new PagedResult<TDto>(items, pageNumber, pageSize, totalCount);
+    }
 }
