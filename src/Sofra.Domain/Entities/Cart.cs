@@ -18,7 +18,11 @@ public class Cart : Entity
 
     private Cart() { }
 
-    public static Cart CreateForRestaurant(Guid userId, Guid restaurantId)
+    /// <summary>
+    /// Creates a cart for a user. Carts are always scoped to one restaurant (SRS BR-02/FR-21);
+    /// an empty cart clears its RestaurantId.
+    /// </summary>
+    public static Cart Create(Guid userId, Guid restaurantId)
     {
         return new Cart
         {
@@ -27,25 +31,24 @@ public class Cart : Entity
         };
     }
 
-    /// <summary>Adding the same food item again increases its quantity instead of duplicating the row.</summary>
-    public CartItem AddItem(FoodItem foodItem, int quantity)
+    public CartItem AddItem(CartItemSource source, int quantity)
     {
         if (quantity <= 0)
             throw new DomainException("Cart item quantity must be greater than zero.");
 
-        if (!foodItem.IsAvailable)
-            throw new DomainException($"'{foodItem.Name}' is unavailable and cannot be added to the cart.");
+        if (!source.IsAvailable)
+            throw new DomainException($"'{source.FoodItemName}' is unavailable and cannot be added to the cart.");
 
-        EnsureSameRestaurant(foodItem.FoodType.RestaurantId);
+        EnsureSameRestaurant(source.RestaurantId);
 
-        var existing = CartItems.FirstOrDefault(i => i.FoodItemId == foodItem.Id);
+        var existing = CartItems.FirstOrDefault(i => i.FoodItemId == source.FoodItemId);
         if (existing is not null)
         {
             existing.SetQuantity(existing.Quantity + quantity);
             return existing;
         }
 
-        var item = CartItem.Create(Id, foodItem.Id, quantity);
+        var item = CartItem.Create(Id, source.FoodItemId, quantity);
         CartItems.Add(item);
         return item;
     }
@@ -58,9 +61,27 @@ public class Cart : Entity
 
         CartItems.Remove(item);
 
-        // an empty cart is not tied to a restaurant anymore
         if (CartItems.Count == 0)
+        {
             RestaurantId = null;
+            Restaurant = null;
+        }
+    }
+
+    public void UpdateItemQuantity(Guid foodItemId, int quantity)
+    {
+        var item = CartItems.FirstOrDefault(i => i.FoodItemId == foodItemId);
+        if (item is null)
+            throw new DomainException("Item is not in the cart.");
+
+        item.SetQuantity(quantity);
+    }
+
+    public void Clear()
+    {
+        CartItems.Clear();
+        RestaurantId = null;
+        Restaurant = null;
     }
 
     public bool IsEmpty => CartItems.Count == 0;

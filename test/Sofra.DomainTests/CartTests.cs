@@ -1,3 +1,4 @@
+using Sofra.Domain.Common;
 using Sofra.Domain.Entities;
 using Sofra.Domain.Exceptions;
 
@@ -17,7 +18,7 @@ public class CartTests
         var item = Burger(restaurant);
 
         // Act
-        cart.AddItem(item, quantity: 2);
+        cart.AddItem(Source(item), quantity: 2);
 
         // Assert
         cart.IsEmpty.Should().BeFalse();
@@ -31,11 +32,11 @@ public class CartTests
         // Arrange
         var restaurant = RestaurantId();
         var cart = CartFor(restaurant);
-        cart.AddItem(Burger(restaurant), quantity: 1);
+        cart.AddItem(Source(Burger(restaurant)), quantity: 1);
         var otherRestaurantItem = Burger(RestaurantId());
 
         // Act
-        Action addItem = () => cart.AddItem(otherRestaurantItem, quantity: 1);
+        Action addItem = () => cart.AddItem(Source(otherRestaurantItem), quantity: 1);
 
         // Assert
         addItem.Should().Throw<DomainException>();
@@ -50,8 +51,8 @@ public class CartTests
         var item = Burger(restaurant);
 
         // Act
-        cart.AddItem(item, quantity: 2);
-        cart.AddItem(item, quantity: 3);
+        cart.AddItem(Source(item), quantity: 2);
+        cart.AddItem(Source(item), quantity: 3);
 
         // Assert
         cart.CartItems.Should().ContainSingle();
@@ -69,7 +70,7 @@ public class CartTests
         item.MakeUnavailable();
 
         // Act
-        Action addItem = () => cart.AddItem(item, quantity: 1);
+        Action addItem = () => cart.AddItem(Source(item), quantity: 1);
 
         // Assert
         addItem.Should().Throw<DomainException>();
@@ -84,7 +85,7 @@ public class CartTests
         var item = Burger(restaurant);
 
         // Act
-        Action addItem = () => cart.AddItem(item, quantity: 0);
+        Action addItem = () => cart.AddItem(Source(item), quantity: 0);
 
         // Assert
         addItem.Should().Throw<DomainException>();
@@ -97,10 +98,57 @@ public class CartTests
         var restaurant = RestaurantId();
         var cart = CartFor(restaurant);
         var item = Burger(restaurant);
-        cart.AddItem(item, quantity: 1);
+        cart.AddItem(Source(item), quantity: 1);
 
         // Act
         cart.RemoveItem(item.Id);
+
+        // Assert
+        cart.IsEmpty.Should().BeTrue();
+        cart.RestaurantId.Should().BeNull();
+    }
+
+    [Fact]
+    public void Changing_a_cart_item_quantity_updates_its_quantity()
+    {
+        // Arrange
+        var restaurant = RestaurantId();
+        var cart = CartFor(restaurant);
+        var item = Burger(restaurant);
+        cart.AddItem(Source(item), quantity: 2);
+
+        // Act
+        cart.UpdateItemQuantity(item.Id, quantity: 7);
+
+        // Assert
+        cart.CartItems.Should().ContainSingle().Which.Quantity.Should().Be(7);
+    }
+
+    [Fact]
+    public void Changing_the_quantity_of_an_item_that_is_not_in_the_cart_is_rejected()
+    {
+        // Arrange
+        var restaurant = RestaurantId();
+        var cart = CartFor(restaurant);
+
+        // Act
+        Action update = () => cart.UpdateItemQuantity(Guid.NewGuid(), quantity: 3);
+
+        // Assert
+        update.Should().Throw<DomainException>();
+    }
+
+    [Fact]
+    public void Clearing_the_cart_removes_all_items_and_detaches_the_restaurant()
+    {
+        // Arrange
+        var restaurant = RestaurantId();
+        var cart = CartFor(restaurant);
+        cart.AddItem(Source(Burger(restaurant)), quantity: 1);
+        cart.AddItem(Source(Burger(restaurant)), quantity: 2);
+
+        // Act
+        cart.Clear();
 
         // Assert
         cart.IsEmpty.Should().BeTrue();
@@ -123,7 +171,10 @@ public class CartTests
 
     private static Guid RestaurantId() => Guid.NewGuid();
 
-    private static Cart CartFor(Guid restaurantId) => Cart.CreateForRestaurant(CustomerId, restaurantId);
+    private static CartItemSource Source(FoodItem item) =>
+        new(item.Id, item.FoodType.RestaurantId, item.Name, item.IsAvailable);
+
+    private static Cart CartFor(Guid restaurantId) => Cart.Create(CustomerId, restaurantId);
 
     private static FoodItem Burger(Guid restaurantId, decimal price = 50m) =>
         FoodItem.Create(
